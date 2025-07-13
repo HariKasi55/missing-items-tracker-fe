@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Vercel project files
+.vercel/
+
+# Next.js build output
+.next/
+out/
+build/
+
+# Environment variables
+.env*
+
+# Logs
+*.log
+
+# OS / editor junk
+.DS_Store
+.idea/
+.vscode/
+
