@@ -171,7 +171,7 @@ const ItemSelection: React.FC = () => {
             }
         } catch (err) {
             console.error('❌ Connection test failed:', err);
-            setError('Backend server is not responding. Please make sure the API server is running on http://localhost:5001');
+            setError('Backend server is not responding. Please check if the API server is accessible.');
         } finally {
             setLoading(false);
         }
@@ -191,7 +191,7 @@ const ItemSelection: React.FC = () => {
                             <div className="p-4 bg-blue-50 rounded-lg">
                                 <h4 className="font-medium text-blue-800 mb-2">🔍 Debug Information:</h4>
                                 <div className="text-sm text-blue-700 space-y-1">
-                                    <p>• Trying to start tracking: <code>http://localhost:5001/api/tracking/start</code></p>
+                                    <p>• API Base URL: <code>{process.env.NEXT_PUBLIC_API_BASE_URL || 'https://wmc-wam.onrender.com/api'}</code></p>
                                     <p>• Selected Map: {selectedMap?.name} (ID: {selectedMap?.id})</p>
                                     <p>• Selected Day: {selectedDay}</p>
                                     <p>• Selected Items: {selectedItems.length} items</p>

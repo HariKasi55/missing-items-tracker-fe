@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://wmc-wam.onrender.com/api';
 
 // Configure axios with default settings
 const api = axios.create({
@@ -50,7 +50,7 @@ export const testConnection = async (): Promise<boolean> => {
 export const testRawFetch = async (): Promise<boolean> => {
     try {
         console.log('🧪 Testing raw fetch...');
-        const response = await fetch('http://localhost:5001/api/maps');
+        const response = await fetch(`${API_BASE_URL}/maps`);
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -69,7 +69,7 @@ export const testRawFetch = async (): Promise<boolean> => {
 export const testItemsFetch = async (mapId: number = 18, day: number = 1): Promise<boolean> => {
     try {
         console.log(`🧪 Testing items fetch for map ${mapId}, day ${day}...`);
-        const url = `http://localhost:5001/api/items/${mapId}/${day}`;
+        const url = `${API_BASE_URL}/items/${mapId}/${day}`;
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -243,7 +243,7 @@ export const getItems = async (mapId: number, day: number): Promise<Item[]> => {
 // Pure fetch version (no axios)
 export const getItemsRaw = async (mapId: number, day: number): Promise<Item[]> => {
     try {
-        const url = `http://localhost:5001/api/items/${mapId}/${day}`;
+        const url = `${API_BASE_URL}/items/${mapId}/${day}`;
         console.log(`🔍 Raw fetch from: ${url}`);
 
         const response = await fetch(url);
@@ -318,7 +318,7 @@ export const startTracking = async (
 
         // Fallback to raw fetch with correct field names
         try {
-            const url = 'http://localhost:5001/api/tracking/start';
+            const url = `${API_BASE_URL}/tracking/start`;
             console.log('🔄 Fallback tracking request to:', url);
 
             const payload = {
@@ -394,7 +394,7 @@ export const startTrackingRaw = async (
     daysThreshold: number
 ): Promise<TrackingSession> => {
     try {
-        const url = 'http://localhost:5001/api/tracking/start';
+        const url = `${API_BASE_URL}/tracking/start`;
         console.log('🚀 Raw tracking request to:', url);
 
         const response = await fetch(url, {
@@ -443,7 +443,7 @@ export const stopTracking = async (sessionId: string): Promise<{ message: string
 
         // Fallback to raw fetch
         try {
-            const url = 'http://localhost:5001/api/tracking/stop';
+            const url = `${API_BASE_URL}/tracking/stop`;
             console.log('🔄 Fallback stop tracking request to:', url);
 
             const response = await fetch(url, {
@@ -616,7 +616,7 @@ export const testStartTracking = async (mapId: number = 18, day: number = 1, ite
 
         console.log('📦 Correct payload (should work!):', payload);
 
-        const response = await fetch('http://localhost:5001/api/tracking/start', {
+        const response = await fetch(`${API_BASE_URL}/tracking/start`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
