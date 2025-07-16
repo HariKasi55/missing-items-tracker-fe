@@ -205,6 +205,7 @@ const MapSelection: React.FC = () => {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => setSelectedDay(1)}
+                                    className="min-w-[90px]"
                                 >
                                     Day 1
                                 </Button>
@@ -212,6 +213,7 @@ const MapSelection: React.FC = () => {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => setSelectedDay(15)}
+                                    className="min-w-[90px]"
                                 >
                                     Day 15
                                 </Button>
@@ -219,6 +221,7 @@ const MapSelection: React.FC = () => {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => setSelectedDay(30)}
+                                    className="min-w-[90px]"
                                 >
                                     Day 30
                                 </Button>
@@ -226,6 +229,7 @@ const MapSelection: React.FC = () => {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => setSelectedDay(60)}
+                                    className="min-w-[90px]"
                                 >
                                     Day 60
                                 </Button>
@@ -236,6 +240,7 @@ const MapSelection: React.FC = () => {
                                         const randomDay = Math.floor(Math.random() * 60) + 1;
                                         setSelectedDay(randomDay);
                                     }}
+                                    className="min-w-[90px]"
                                 >
                                     Random
                                 </Button>
