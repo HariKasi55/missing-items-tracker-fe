@@ -100,4 +100,4 @@ export function isValidNumber(value: string): boolean {
 export function parseNumberSafely(value: string, defaultValue: number = 0): number {
     const parsed = Number(value);
     return isNaN(parsed) ? defaultValue : parsed;
-} 
+}
