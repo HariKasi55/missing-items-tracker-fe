@@ -4,6 +4,11 @@ import { useRef, useEffect, useState } from "react"
 import FloorMap from "@/components/floor-map"
 import Onboarding from "@/components/onboarding"
 import MissingItemsPanel from "@/components/missing-items-panel"
+import MapSelection from "@/components/MapSelection"
+import ItemSelection from "@/components/ItemSelection"
+import TrackingDashboard from "@/components/TrackingDashboard"
+import { useStore } from "../lib/store"
+import React from "react"
 
 export interface UserPreferences {
   assignedAreas: string[]
@@ -50,8 +55,31 @@ export default function App() {
             <FloorMap assignedAreas={userPreferences.assignedAreas} trackedItems={userPreferences.trackedItems} />
           </div>
         </div>
-        {userPreferences.trackMissingItems && <MissingItemsPanel />}
+        {/* {userPreferences.trackMissingItems && <MissingItemsPanel />} */}
       </div>
     </div>
   )
 }
+
+export const HomePage: React.FC = () => {
+  const { currentPage } = useStore();
+
+  const renderCurrentPage = () => {
+    switch (currentPage) {
+      case 'maps':
+        return <MapSelection />;
+      case 'items':
+        return <ItemSelection />;
+      case 'tracking':
+        return <TrackingDashboard />;
+      default:
+        return <MapSelection />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      {renderCurrentPage()}
+    </div>
+  );
+};
