@@ -1,11 +1,12 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://wmc-wam.onrender.com/api';
+// Updated API Base URL to match backend specification
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
 
 // Configure axios with default settings
 const api = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 10000,
+    timeout: 15000, // Increased timeout for production
     headers: {
         'Content-Type': 'application/json',
     },
@@ -14,7 +15,7 @@ const api = axios.create({
 // Add request and response interceptors for debugging
 api.interceptors.request.use(
     (config) => {
-        console.log('🚀 Making API request:', config.method?.toUpperCase(), config.url);
+        console.log('🚀 Making API request:', config.method?.toUpperCase(), `${API_BASE_URL}${config.url}`);
         return config;
     },
     (error) => {
@@ -25,50 +26,46 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
     (response) => {
-        console.log('✅ API response:', response.status, response.config.url);
+        console.log('✅ API response:', response.status, `${API_BASE_URL}${response.config.url}`);
+        console.log('📦 Response data:', response.data);
         return response;
     },
     (error) => {
         console.error('❌ Response error:', error.response?.status, error.response?.data || error.message);
+        if (error.response?.status === 500) {
+            console.error('🔥 Server error - check backend logs');
+        } else if (error.response?.status === 404) {
+            console.error('🔍 Endpoint not found - check API URL');
+        } else if (error.response?.status >= 400 && error.response?.status < 500) {
+            console.error('📝 Client error - check request format');
+        }
         return Promise.reject(error);
     }
 );
 
-// Test connection function
-export const testConnection = async (): Promise<boolean> => {
+// Health Check Test
+export const testHealthCheck = async (): Promise<boolean> => {
     try {
-        const response = await api.get('/maps');
-        console.log('🔗 Connection test successful:', response.data);
-        return true;
-    } catch (error: any) {
-        console.error('🔗 Connection test failed:', error);
-        return false;
-    }
-};
-
-// Test with raw fetch (bypassing axios)
-export const testRawFetch = async (): Promise<boolean> => {
-    try {
-        console.log('🧪 Testing raw fetch...');
-        const response = await fetch(`${API_BASE_URL}/maps`);
+        console.log('🏥 Testing health check...');
+        const response = await fetch(`${API_BASE_URL}/health`);
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
         const data = await response.json();
-        console.log('🔗 Raw fetch test successful:', data);
+        console.log('✅ Health check successful:', data);
         return true;
     } catch (error: any) {
-        console.error('🔗 Raw fetch test failed:', error);
+        console.error('❌ Health check failed:', error);
         return false;
     }
 };
 
-// Test items endpoint with raw fetch
-export const testItemsFetch = async (mapId: number = 18, day: number = 1): Promise<boolean> => {
+// Test Items Endpoint
+export const testGetItems = async (mapId: number = 18, day: number = 1): Promise<boolean> => {
     try {
-        console.log(`🧪 Testing items fetch for map ${mapId}, day ${day}...`);
+        console.log(`🧪 Testing get items for map ${mapId}, day ${day}...`);
         const url = `${API_BASE_URL}/items/${mapId}/${day}`;
         const response = await fetch(url);
 
@@ -77,19 +74,97 @@ export const testItemsFetch = async (mapId: number = 18, day: number = 1): Promi
         }
 
         const data = await response.json();
-        console.log('🔗 Items fetch test successful:', data);
+        console.log('✅ Get items test successful:', data);
         return true;
     } catch (error: any) {
-        console.error('🔗 Items fetch test failed:', error);
+        console.error('❌ Get items test failed:', error);
         return false;
     }
 };
 
-// Make testConnection available globally for debugging
+// Test Start Tracking
+export const testStartTracking = async (): Promise<boolean> => {
+    try {
+        console.log('🎯 Testing start tracking...');
+        const testPayload = {
+            map_id: 18,
+            day: 1,
+            selected_items: [1, 2, 3],
+            days_threshold: 3
+        };
+
+        const response = await fetch(`${API_BASE_URL}/tracking/start`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(testPayload)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('✅ Start tracking test successful:', data);
+        return true;
+    } catch (error: any) {
+        console.error('❌ Start tracking test failed:', error);
+        return false;
+    }
+};
+
+// Test Get Missing Items
+export const testGetMissingItems = async (sessionId: string = 'test-session'): Promise<boolean> => {
+    try {
+        console.log(`🔍 Testing get missing items for session ${sessionId}...`);
+        const url = `${API_BASE_URL}/missing-items/${sessionId}`;
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('✅ Get missing items test successful:', data);
+        return true;
+    } catch (error: any) {
+        console.error('❌ Get missing items test failed:', error);
+        return false;
+    }
+};
+
+// Comprehensive connection test
+export const testAllEndpoints = async (): Promise<void> => {
+    console.log('🧪 Running comprehensive API tests...');
+
+    const tests = [
+        { name: 'Health Check', test: testHealthCheck },
+        { name: 'Get Items', test: () => testGetItems(18, 1) },
+        { name: 'Start Tracking', test: testStartTracking },
+        { name: 'Get Missing Items', test: () => testGetMissingItems('test-session') },
+    ];
+
+    for (const { name, test } of tests) {
+        console.log(`\n--- Testing ${name} ---`);
+        try {
+            await test();
+        } catch (error) {
+            console.error(`❌ ${name} failed:`, error);
+        }
+    }
+
+    console.log('\n🏁 All tests completed!');
+};
+
+// Make test functions available globally for debugging
 if (typeof window !== 'undefined') {
-    (window as any).testConnection = testConnection;
-    (window as any).testRawFetch = testRawFetch;
-    (window as any).testItemsFetch = testItemsFetch;
+    (window as any).testHealthCheck = testHealthCheck;
+    (window as any).testGetItems = testGetItems;
+    (window as any).testStartTracking = testStartTracking;
+    (window as any).testGetMissingItems = testGetMissingItems;
+    (window as any).testAllEndpoints = testAllEndpoints;
+    (window as any).API_BASE_URL = API_BASE_URL;
 }
 
 // Types for API responses
@@ -148,13 +223,18 @@ export interface SimulationRequest {
 export const getMaps = async (): Promise<Map[]> => {
     try {
         const response = await api.get('/maps');
+        console.log('Maps API response:', response.data);
+
+        // Handle new backend format: {"maps": [...]}
+        const mapsArray = response.data.maps || response.data;
 
         // Transform the response to match frontend interface
-        const transformedMaps = response.data.map((map: any) => ({
-            id: map.map_id,
-            name: map.name
+        const transformedMaps = mapsArray.map((map: any) => ({
+            id: map.id || map.map_id, // Handle both id and map_id
+            name: map.title || map.name // Handle both title and name
         }));
 
+        console.log('Transformed maps:', transformedMaps);
         return transformedMaps;
     } catch (error: any) {
         console.error('Error fetching maps:', error);
@@ -287,11 +367,8 @@ export const getItemsRaw = async (mapId: number, day: number): Promise<Item[]> =
     }
 };
 
-// Make functions available globally for debugging
+// Legacy function names for backward compatibility
 if (typeof window !== 'undefined') {
-    (window as any).testConnection = testConnection;
-    (window as any).testRawFetch = testRawFetch;
-    (window as any).testItemsFetch = testItemsFetch;
     (window as any).getItemsRaw = getItemsRaw;
 }
 
@@ -606,57 +683,3 @@ export const MAP_IDS = {
     'Emergency Wing': 34,
 } as const;
 
-// Test start tracking with debugging
-export const testStartTracking = async (mapId: number = 18, day: number = 1, itemIds: number[] = [17340557], daysThreshold: number = 5) => {
-    try {
-        console.log('🧪 Testing start tracking with:', { mapId, day, itemIds, daysThreshold });
-
-        // Use correct field names that backend expects
-        const payload = {
-            map_id: mapId,
-            day: day,
-            selected_items: itemIds,  // ✅ Backend expects 'selected_items' not 'item_ids'
-            days_threshold: daysThreshold,
-            current_day: day,         // ✅ Backend requires 'current_day'
-        };
-
-        console.log('📦 Correct payload (should work!):', payload);
-
-        const response = await fetch(`${API_BASE_URL}/tracking/start`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload),
-        });
-
-        console.log('📡 Response status:', response.status);
-        console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
-
-        const responseText = await response.text();
-        console.log('📡 Raw response:', responseText);
-
-        if (!response.ok) {
-            console.error('❌ Error response:', {
-                status: response.status,
-                statusText: response.statusText,
-                body: responseText
-            });
-            return false;
-        }
-
-        const data = JSON.parse(responseText);
-        console.log('✅ SUCCESS! Tracking session created:', data);
-        console.log('🎉 Backend is fully working with frontend!');
-        return true;
-
-    } catch (error) {
-        console.error('❌ Test failed:', error);
-        return false;
-    }
-};
-
-// Add to window for debugging
-if (typeof window !== 'undefined') {
-    (window as any).testStartTracking = testStartTracking;
-} 

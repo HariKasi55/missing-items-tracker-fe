@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { useStore } from '../lib/store';
-import { getItems, getItemsRaw, startTracking, startTrackingMock, handleApiError, getMaps, testRawFetch, testItemsFetch } from '../lib/api';
+import { getItems, getItemsRaw, startTracking, startTrackingMock, handleApiError, getMaps, testHealthCheck, testGetItems } from '../lib/api';
 import {
     Package,
     Search,
@@ -157,10 +157,10 @@ const ItemSelection: React.FC = () => {
 
             // Test with all methods
             console.log('1. Testing raw fetch...');
-            const rawFetchWorking = await testRawFetch();
+            const rawFetchWorking = await testHealthCheck();
 
             console.log('2. Testing items fetch...');
-            const itemsFetchWorking = await testItemsFetch(selectedMap?.id, selectedDay);
+            const itemsFetchWorking = await testGetItems(selectedMap?.id, selectedDay);
 
             console.log('3. Testing raw items fetch...');
             if (selectedMap && selectedDay) {
