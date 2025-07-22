@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from "react"
 import FloorMap from "@/components/floor-map"
 import Onboarding from "@/components/onboarding"
+import OnboardingWelcome from "@/components/onboarding-welcome"
 import MissingItemsPanel from "@/components/missing-items-panel"
 import MapSelection from "@/components/MapSelection"
 import ItemSelection from "@/components/ItemSelection"
@@ -17,13 +18,16 @@ export interface UserPreferences {
 }
 
 export default function App() {
-  const [showOnboarding, setShowOnboarding] = useState(true)
+  const [showWelcome, setShowWelcome] = useState(true)           // Step 1: Welcome page
+  const [showOnboarding, setShowOnboarding] = useState(false)    // Step 2: Onboarding
   const [userPreferences, setUserPreferences] = useState<UserPreferences>({
     assignedAreas: [],
     trackedItems: [],
     trackMissingItems: false,
   })
+
   const scrollRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     if (!showOnboarding && scrollRef.current) {
       const container = scrollRef.current
@@ -35,9 +39,20 @@ export default function App() {
     }
   }, [showOnboarding])
 
+  // After welcome page → show onboarding
+  const handleWelcomeStart = () => {
+    setShowWelcome(false)
+    setShowOnboarding(true)
+  }
+
+  // After onboarding → show main UI
   const handleOnboardingComplete = (preferences: UserPreferences) => {
     setUserPreferences(preferences)
     setShowOnboarding(false)
+  }
+
+  if (showWelcome) {
+    return <OnboardingWelcome onStart={handleWelcomeStart} />
   }
 
   if (showOnboarding) {
@@ -52,34 +67,15 @@ export default function App() {
           className="w-full overflow-x-auto overflow-y-auto max-h-[600px] flex justify-center"
         >
           <div className="scale-50 origin-top inline-block min-w-[1600px] min-h-[600px]">
-            <FloorMap assignedAreas={userPreferences.assignedAreas} trackedItems={userPreferences.trackedItems} />
+            <FloorMap
+              assignedAreas={userPreferences.assignedAreas}
+              trackedItems={userPreferences.trackedItems}
+            />
           </div>
         </div>
+        {/* Uncomment if needed */}
         {/* {userPreferences.trackMissingItems && <MissingItemsPanel />} */}
       </div>
     </div>
   )
 }
-
-export const HomePage: React.FC = () => {
-  const { currentPage } = useStore();
-
-  const renderCurrentPage = () => {
-    switch (currentPage) {
-      case 'maps':
-        return <MapSelection />;
-      case 'items':
-        return <ItemSelection />;
-      case 'tracking':
-        return <TrackingDashboard />;
-      default:
-        return <MapSelection />;
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-background">
-      {renderCurrentPage()}
-    </div>
-  );
-};
