@@ -33,6 +33,8 @@ import {
     Calendar
 } from 'lucide-react';
 import { formatDate, formatTime, getStatusColor, getStatusIcon } from '../lib/utils';
+import Image from 'next/image';
+import { getEquipmentTypeIconPath } from '../lib/equipmentIcons';
 
 const TrackingDashboard: React.FC = () => {
     const {
@@ -509,7 +511,10 @@ const TrackingDashboard: React.FC = () => {
                                             <div>
                                                 <h4 className="font-medium">{item.name}</h4>
                                                 <p className="text-sm text-muted-foreground">
-                                                    {item.equipment_type} • {item.location}
+                                                    {(() => {
+                                                        const iconPath = getEquipmentTypeIconPath(item.equipment_type);
+                                                        return <><Image src={iconPath} alt={item.equipment_type + ' icon'} width={16} height={16} style={{display: 'inline', verticalAlign: 'text-bottom', marginRight: 4, objectFit: 'contain'}} />{item.equipment_type}</>;
+                                                    })()} • {item.location}
                                                 </p>
                                             </div>
                                         </div>

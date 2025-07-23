@@ -15,6 +15,8 @@ import {
     Settings,
     Filter
 } from 'lucide-react';
+import Image from 'next/image';
+import { getEquipmentTypeIconPath } from '../lib/equipmentIcons';
 
 const ItemSelection: React.FC = () => {
     const {
@@ -334,22 +336,26 @@ const ItemSelection: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-wrap gap-2">
-                        {equipmentTypes.map((type) => (
-                            <Button
-                                key={type}
-                                variant={selectedEquipmentType === type ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setSelectedEquipmentType(type)}
-                                className="text-sm"
-                            >
-                                {type}
-                                {type !== 'All' && (
-                                    <span className="ml-1 text-xs opacity-60">
-                                        ({items.filter(item => item.equipment_type === type).length})
-                                    </span>
-                                )}
-                            </Button>
-                        ))}
+                        {equipmentTypes.map((type) => {
+                            const iconPath = getEquipmentTypeIconPath(type);
+                            return (
+                                <Button
+                                    key={type}
+                                    variant={selectedEquipmentType === type ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => setSelectedEquipmentType(type)}
+                                    className="text-sm flex items-center gap-1"
+                                >
+                                    <Image src={iconPath} alt={type + ' icon'} width={20} height={20} style={{objectFit: 'contain'}} />
+                                    {type}
+                                    {type !== 'All' && (
+                                        <span className="ml-1 text-xs opacity-60">
+                                            ({items.filter(item => item.equipment_type === type).length})
+                                        </span>
+                                    )}
+                                </Button>
+                            );
+                        })}
                     </div>
                 </CardContent>
             </Card>
