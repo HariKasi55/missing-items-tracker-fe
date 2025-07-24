@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import FloorMap from "@/components/floor-map"
+import FloorMap from "@/components/map_tracker"
 import type { UserPreferences } from "@/app/page"
 
 interface OnboardingProps {
@@ -13,18 +13,19 @@ interface OnboardingProps {
 }
 
 const TRACKABLE_ITEMS = [
-  "Telebox",
-  "Vein finder",
-  "Vitals cart",
-  "Pulse ox cords",
-  "Glucometers",
-  "Bladder scanners",
-  "EKG machine",
-  "Potty/shower chairs",
-  "Recliner chairs",
-  "Dash monitor",
-  "Doppler ultrasound",
-  "Dyson Fans",
+  "Telemetry Systems",
+  "Module Infusion",
+  "Bed East",
+  "Pump Infusion",
+  "Monitors",
+  "Wheelchairs",
+  "IV Poles",
+  "Crash Carts",
+  "Ventilators",
+  "Defibrillators",
+  "Oxygen Tanks",
+  "Beds",
+  "Stretchers",
 ]
 
 const ROOM_AREAS = [

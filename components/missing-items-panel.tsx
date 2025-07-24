@@ -2,13 +2,22 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { AlertTriangle } from "lucide-react"
-import { useRef, useState } from "react"
+import { AlertTriangle, Clock, MapPin } from "lucide-react"
+import { useRef, useState, useEffect } from "react"
 import React from "react"
+import { getMissingItems, type Item, type MissingItemsResponse } from "@/lib/api"
 
-export default function MissingItemsPanel() {
-  // This would be populated with actual missing items data
-  const missingItems: string[] = []
+interface MissingItemsPanelProps {
+  sessionId?: string;
+  isVisible?: boolean;
+  onMissingItemsCountChange?: (count: number) => void;
+}
+
+export default function MissingItemsPanel({ sessionId, isVisible = true, onMissingItemsCountChange }: MissingItemsPanelProps) {
+  const [missingItems, setMissingItems] = useState<Item[]>([])
+  const [totalMissing, setTotalMissing] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Draggable logic
   const panelRef = useRef<HTMLDivElement>(null)
@@ -33,7 +42,31 @@ export default function MissingItemsPanel() {
 
   const onMouseUp = () => setDragging(false)
 
-  // Attach/detach listeners
+  // Fetch missing items data
+  const fetchMissingItems = async () => {
+    if (!sessionId) return
+    
+    setLoading(true)
+    setError(null)
+    try {
+      const response: MissingItemsResponse = await getMissingItems(sessionId)
+      setMissingItems(response.missing_items)
+      setTotalMissing(response.total_missing)
+      
+      // Notify parent component of count change
+      if (onMissingItemsCountChange) {
+        onMissingItemsCountChange(response.total_missing)
+      }
+    } catch (err) {
+      console.error('Error fetching missing items:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load missing items'
+      setError(`Failed to load missing items: ${errorMessage}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Attach/detach listeners for dragging
   React.useEffect(() => {
     if (dragging) {
       window.addEventListener("mousemove", onMouseMove)
@@ -48,6 +81,19 @@ export default function MissingItemsPanel() {
     }
   }, [dragging])
 
+  // Fetch missing items on mount and when sessionId changes
+  useEffect(() => {
+    fetchMissingItems()
+  }, [sessionId])
+
+  // Poll for missing items updates every 5 seconds
+  useEffect(() => {
+    if (!sessionId) return
+    
+    const interval = setInterval(fetchMissingItems, 5000)
+    return () => clearInterval(interval)
+  }, [sessionId])
+
   return (
     <Card
       ref={panelRef}
@@ -61,22 +107,67 @@ export default function MissingItemsPanel() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {missingItems.length === 0 ? (
+        {loading ? (
           <div className="text-center py-8 text-gray-500">
-            <div className="text-sm">No missing items detected</div>
-            <div className="text-xs mt-1">All tracked equipment is accounted for</div>
+            <div className="text-sm">Loading missing items...</div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500">
+            <div className="text-sm">{error}</div>
+            <button 
+              onClick={fetchMissingItems}
+              className="text-xs mt-2 px-2 py-1 bg-red-100 rounded hover:bg-red-200"
+            >
+              Retry
+            </button>
+          </div>
+        ) : missingItems.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <div className="text-sm">
+              {sessionId ? 'No missing items detected' : 'No tracking session active'}
+            </div>
+            <div className="text-xs mt-1">
+              {sessionId ? 'All tracked equipment is accounted for' : 'Start tracking to monitor missing items'}
+            </div>
           </div>
         ) : (
           <div className="space-y-2">
-            {missingItems.map((item, index) => (
+            <div className="text-xs text-gray-600 mb-2">
+              {totalMissing} item{totalMissing !== 1 ? 's' : ''} missing
+            </div>
+            {missingItems.map((item) => (
               <div
-                key={index}
-                className="flex items-center justify-between p-2 bg-red-50 rounded border border-red-200"
+                key={item.id}
+                className="p-3 bg-red-50 rounded border border-red-200 space-y-2"
               >
-                <span className="text-sm font-medium text-red-800">{item}</span>
-                <Badge variant="destructive" className="text-xs">
-                  Missing
-                </Badge>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-red-800">{item.name}</span>
+                  <Badge variant="destructive" className="text-xs">
+                    Missing
+                  </Badge>
+                </div>
+                <div className="text-xs text-gray-600 space-y-1">
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    <span>Type: {item.equipment_type}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    <span>Location: {item.location}</span>
+                  </div>
+                  {item.last_seen && (
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      <span>Last seen: {new Date(item.last_seen).toLocaleString()}</span>
+                    </div>
+                  )}
+                  {item.missing_since && (
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      <span>Missing since: {new Date(item.missing_since).toLocaleString()}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
