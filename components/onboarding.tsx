@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import FloorMap from "@/components/map_tracker"
+import Image from "next/image"
+import { getEquipmentTypeIconPath } from "@/lib/equipmentIcons"
 import type { UserPreferences } from "@/app/page"
 
 interface OnboardingProps {
@@ -190,20 +192,36 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           )}
           {currentStep === 2 && (
             <div className="space-y-2">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {TRACKABLE_ITEMS.map((item) => (
-                  <div key={item} className="flex items-center space-x-2">
+                  <div key={item} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
                     <Checkbox
                       id={item}
                       checked={trackedItems.includes(item)}
                       onCheckedChange={() => handleItemToggle(item)}
                     />
-                    <label
-                      htmlFor={item}
-                      className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                    >
-                      {item}
-                    </label>
+                    <div className="flex items-center space-x-2 flex-1">
+                      <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center">
+                        <Image
+                          src={getEquipmentTypeIconPath(item)}
+                          alt={item}
+                          width={24}
+                          height={24}
+                          className="object-contain"
+                          onError={(e) => {
+                            // Fallback to a generic icon if the specific icon fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/Med-Icons/Tablet.png';
+                          }}
+                        />
+                      </div>
+                      <label
+                        htmlFor={item}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
+                      >
+                        {item}
+                      </label>
+                    </div>
                   </div>
                 ))}
               </div>

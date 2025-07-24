@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Updated API Base URL to match backend specification
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://192.168.1.168:8000/api';
 
 // Configure axios with default settings
 const api = axios.create({
